@@ -6,7 +6,8 @@ const data = {
       username: "developer_sajib",
       email: "sajibshikder78971@gmail.com",
       password: "asdfg",
-      phone: "01789557538",
+      image: null,
+      cell: "01789557538",
     },
     {
       id: 2,
@@ -14,7 +15,8 @@ const data = {
       username: "expert_developer",
       email: "expert43developer5@gmail.com",
       password: "asdfg",
-      phone: "01892923343",
+      image: null, 
+      cell: "01892923343",
     },
   ],
 };
