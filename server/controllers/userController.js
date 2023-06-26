@@ -1,11 +1,12 @@
 const User = require("../models/User");
+const { findWithId } = require("../services/findWithId");
 
 // get all users
 const getAllUsers = async (req, res) => {
   try {
     const search = req.query.search || "";
     const page = req.query.page || 1;
-    const limit = req.query.limit || 1;
+    const limit = req.query.limit || 5;
 
     // init regExp
     const searchRegExp = new RegExp(".*" + search + ".*", "i");
@@ -28,6 +29,9 @@ const getAllUsers = async (req, res) => {
       .limit(limit)
       .skip((page - 1) * limit);
 
+    // validation
+    if (!users) throw new Error("Can't get all users");
+
     // count the number of document
     const count = await User.find(filter).countDocuments();
 
@@ -47,5 +51,21 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+// get single user with id
+const getSingleUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // hide password
+    const options = { password: 0 };
+
+    const singleUser = await findWithId(id, options);
+
+    res.status(200).json({ message: "Found the single user", singleUser });
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
 // module exports
-module.exports = { getAllUsers };
+module.exports = { getAllUsers, getSingleUser };
