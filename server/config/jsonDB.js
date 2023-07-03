@@ -6,7 +6,6 @@ const data = {
       username: "developer_sajib",
       email: "sajibshikder78971@gmail.com",
       password: "asdfg",
-      image: null,
       cell: "01789557538",
     },
     {
@@ -15,7 +14,6 @@ const data = {
       username: "expert_developer",
       email: "expert43developer5@gmail.com",
       password: "asdfg",
-      image: null, 
       cell: "01892923343",
     },
   ],

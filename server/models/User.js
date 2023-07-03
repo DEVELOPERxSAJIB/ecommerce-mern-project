@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 // create Schema
 const userSchema = mongoose.Schema(
@@ -36,7 +36,7 @@ const userSchema = mongoose.Schema(
     },
     image: {
       type: String,
-      default: process.env.DEFAULT_IMG,
+      default: process.env.DEFAULT_IMG || "public/images/users/default.png",
     },
     cell: {
       type: String,
