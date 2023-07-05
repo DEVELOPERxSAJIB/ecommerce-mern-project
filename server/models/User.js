@@ -31,8 +31,13 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
       required: [true, "password is required"],
-      minlength: [4, "password can't be less then 4 carrectar"],
+      minlength: [4, "password can't be less then 4 characters"],
       set: (v) => bcrypt.hashSync(v, bcrypt.genSaltSync(10)),
+    },
+    address: {
+      type: String,
+      required: [true, "address is required"],
+      minlength: [4, "address can't less then 4 characters"]
     },
     image: {
       type: String,

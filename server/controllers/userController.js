@@ -113,7 +113,7 @@ const processRegister = async (req, res) => {
     }
 
     const token = createToken(
-      { name, username, email, password, cell, address, image },
+      { name, username, email, password, cell, address },
       "10m"
     );
 
