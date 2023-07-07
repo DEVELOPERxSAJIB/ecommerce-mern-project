@@ -40,8 +40,8 @@ const userSchema = mongoose.Schema(
       minlength: [4, "address can't less then 4 characters"]
     },
     image: {
-      type: String,
-      default: process.env.DEFAULT_IMG || "public/images/users/default.png",
+      type: Buffer,
+      contentType: String,
     },
     cell: {
       type: String,

@@ -85,12 +85,12 @@ const deleteSingleUser = async (req, res, next) => {
     deleteImage(userImagePath);
 
     if (user.isAdmin == true) {
-      res.send(`can't delete because ${user.name} is an Admin `);
+      return res.send(`can't delete because ${user.name} is an Admin `);
     } else {
       const deletedUser = await User.findByIdAndDelete({
         _id: id,
       });
-      if (!deletedUser) res.json({ message: "can't delete user" });
+      if (!deletedUser) return res.json({ message: "can't delete user" });
     }
 
     res.status(200).json({ messge: "user deleted successfull", deletedUser });
@@ -103,7 +103,25 @@ const deleteSingleUser = async (req, res, next) => {
 // create new user
 const processRegister = async (req, res) => {
   try {
-    const { name, username, email, password, cell, address, image } = req.body;
+    const { name, username, email, password, cell, address } = req.body;
+
+    const image = req.file;
+
+    if (!image) {
+      return errorResponse(res, {
+        statusCode: 400,
+        message: "no file found to upload",
+      });
+    }
+
+    if (image.size > 1024 * 1024 * 2) {
+      return errorResponse(res, {
+        statusCode: 400,
+        message: "File is to large",
+      });
+    }
+
+    const imageBufferString = image.buffer.toString("base64");
 
     const checkMail = await User.exists({ email });
     if (checkMail) {
@@ -113,7 +131,15 @@ const processRegister = async (req, res) => {
     }
 
     const token = createToken(
-      { name, username, email, password, cell, address },
+      {
+        name,
+        username,
+        email,
+        password,
+        cell,
+        address,
+        image: imageBufferString,
+      },
       "10m"
     );
 
@@ -134,6 +160,7 @@ const processRegister = async (req, res) => {
       message: `user registration in a process. please check ${email} to verify your account`,
       payload: {
         token,
+        imgBuffer: imageBufferString,
       },
     });
   } catch (error) {
@@ -164,12 +191,74 @@ const activateRegisteredUser = async (req, res) => {
     const activateUser = await User.create(decode);
 
     // send res
-    return successResponse(res, {
+    successResponse(res, {
       message: "user registration successfull",
       payload: { activateUser },
     });
   } catch (error) {
     console.log("error from activate Registered User :", error.message);
+  }
+};
+
+// update user by id
+const updateUserById = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const options = { password: 0 };
+    await findWithId(User, id, options);
+
+    const userOptions = { new: true, runValidators: true, context: "query" };
+
+    let updates = {};
+
+    if (req.body.name) {
+      updates.name = req.body.name;
+    }
+    if (req.body.username) {
+      updates.username = req.body.username;
+    }
+    if (req.body.password) {
+      updates.password = req.body.password;
+    }
+    if (req.body.name) {
+      updates.name = req.body.name;
+    }
+    if (req.body.address) {
+      updates.address = req.body.address;
+    }
+    if (req.body.cell) {
+      updates.cell = req.body.cell;
+    }
+
+    const image = req.file;
+
+    if (image) {
+      if (image.size >= 1024 * 1024 * 2) {
+        return errorResponse(res, {
+          statusCode: 400,
+          message: "File is to large to replace",
+        });
+      } else {
+        updates.image = image.buffer.toString("base64");
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, updates, userOptions);
+
+    if (!updatedUser) {
+      return errorResponse(res, {
+        statusCode: 404,
+        message: "user with this ID not found",
+      });
+    }
+
+    successResponse(res, {
+      statusCode: 200,
+      message: "user updated successfully",
+      payload: { updatedUser },
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -180,4 +269,5 @@ module.exports = {
   deleteSingleUser,
   processRegister,
   activateRegisteredUser,
+  updateUserById,
 };

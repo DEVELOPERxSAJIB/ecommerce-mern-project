@@ -5,10 +5,11 @@ const {
   deleteSingleUser,
   processRegister,
   activateRegisteredUser,
+  updateUserById,
 } = require("../controllers/userController");
-const { upload } = require("../middlewares/uploadFile");
 const { validateUserRegistration } = require("../validators/auth");
 const { runValidator } = require("../validators/index");
+const { uploadImage } = require("../middlewares/multer");
 
 // init router
 const userRoute = express.Router();
@@ -17,7 +18,7 @@ const userRoute = express.Router();
 userRoute.get("/", getAllUsers);
 userRoute.post(
   "/process-register",
-  upload,
+  uploadImage,
   validateUserRegistration,
   runValidator,
   processRegister
@@ -25,6 +26,7 @@ userRoute.post(
 userRoute.post("/verify", activateRegisteredUser);
 userRoute.get("/:id", getSingleUser);
 userRoute.delete("/:id", deleteSingleUser);
+userRoute.put("/:id", uploadImage, updateUserById);
 
 // export router
 module.exports = userRoute;
