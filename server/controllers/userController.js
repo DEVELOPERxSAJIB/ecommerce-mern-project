@@ -138,7 +138,6 @@ const processRegister = async (req, res) => {
         password,
         cell,
         address,
-        image: imageBufferString,
       },
       "10m"
     );
@@ -243,7 +242,11 @@ const updateUserById = async (req, res, next) => {
       }
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, updates, userOptions);
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      updates,
+      userOptions
+    ).select("-password");
 
     if (!updatedUser) {
       return errorResponse(res, {
@@ -262,6 +265,67 @@ const updateUserById = async (req, res, next) => {
   }
 };
 
+// Ban user by id
+const banUserById = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const userOptions = { new: true, runValidators: true, context: "query" };
+
+    const updates = { isBanned: true };
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      updates,
+      userOptions
+    ).select("-password");
+
+    if (!updatedUser) {
+      return errorResponse(res, {
+        statusCode: 400,
+        message: "can't ban this user",
+      });
+    }
+
+    successResponse(res, {
+      statusCode: 200,
+      message: "user banned successfully",
+      payload: { updatedUser },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Unban user by id
+const unbanUserById = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const userOptions = { new: true, runValidators: true, context: "query" };
+
+    const updates = { isBanned: false };
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      updates,
+      userOptions
+    ).select("-password");
+
+    if (!updatedUser) {
+      return errorResponse(res, {
+        statusCode: 400,
+        message: "Can't unban user",
+      });
+    }
+
+    successResponse(res, {
+      statusCode: 200,
+      message: "user unbanned successfully",
+      payload: { updatedUser },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // module exports
 module.exports = {
   getAllUsers,
@@ -270,4 +334,6 @@ module.exports = {
   processRegister,
   activateRegisteredUser,
   updateUserById,
+  banUserById,
+  unbanUserById
 };

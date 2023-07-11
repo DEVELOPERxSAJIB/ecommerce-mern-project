@@ -1,11 +1,13 @@
 const express = require("express");
 const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 const colors = require("colors");
 const errorHandaler = require("http-errors");
 const xssClean = require("xss-clean");
 const rateLimit = require("express-rate-limit");
-const userRouter = require("./router/userRoute");
 const seedingRouter = require("./router/seedRoute");
+const userRouter = require("./router/userRoute");
+const authRouter = require("./router/authRoute");
 const mongoDBConnection = require("./config/configDB");
 const { errorResponse } = require("./controllers/responseController");
 
@@ -17,6 +19,7 @@ const app = express();
 
 // request on console
 app.use(morgan("dev"));
+app.use(cookieParser())
 
 // secure API
 const reteLimiter = rateLimit({
@@ -32,8 +35,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // routes
-app.use("/api/v1/user", userRouter);
 app.use("/api/v1/seed", seedingRouter);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/auth", authRouter);
 
 // error handaling middlewares
 app.use((req, res, next) => {
