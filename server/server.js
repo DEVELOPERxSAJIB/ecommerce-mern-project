@@ -24,7 +24,7 @@ app.use(cookieParser())
 // secure API
 const reteLimiter = rateLimit({
   windowMs: 1000 * 60,
-  max: 5,
+  max: 15,
   message: "To many request from this API. Please try again after some time",
 });
 app.use(reteLimiter);

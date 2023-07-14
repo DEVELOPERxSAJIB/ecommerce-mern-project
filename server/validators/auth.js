@@ -67,5 +67,90 @@ const validateUserLogin = [
     ),
 ];
 
+// user update Password validaton
+const validateUserPasswordUpdate = [
+  body("oldPassword")
+    .trim()
+    .notEmpty()
+    .withMessage("old password is required")
+    .isLength({ min: 6 })
+    .withMessage("password should at least 6 characters long")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/
+    )
+    .withMessage(
+      "password should at least 6 characters, including at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character"
+    ),
+  body("newPassword")
+    .trim()
+    .notEmpty()
+    .withMessage("New Password is required")
+    .isLength({ min: 6 })
+    .withMessage("password should at least 6 characters long")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/
+    )
+    .withMessage(
+      "password should at least 6 characters, including at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character"
+    ),
+  body("confirmPassword")
+    .trim()
+    .notEmpty()
+    .withMessage("confirm password is required")
+    .isLength({ min: 6 })
+    .withMessage("password should at least 6 characters long")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/
+    )
+    .withMessage(
+      "password should at least 6 characters, including at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character"
+    ),
+];
+
+// user password forgot validaton for entered email
+const validateEmailForForgetPassword = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email address required")
+    .isEmail()
+    .withMessage("Invalid email address"),
+];
+
+// user password reset validaton
+const validateUserResetPassword = [
+  body("token").trim().notEmpty().withMessage("token is required"),
+  body("newPassword")
+    .trim()
+    .notEmpty()
+    .withMessage("New Password is required")
+    .isLength({ min: 6 })
+    .withMessage("password should at least 6 characters long")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/
+    )
+    .withMessage(
+      "password should at least 6 characters, including at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character"
+    ),
+  body("confirmPassword")
+    .trim()
+    .notEmpty()
+    .withMessage("confirm password is required")
+    .isLength({ min: 6 })
+    .withMessage("password should at least 6 characters long")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/
+    )
+    .withMessage(
+      "password should at least 6 characters, including at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character"
+    ),
+];
+
 // export validator
-module.exports = { validateUserRegistration, validateUserLogin };
+module.exports = {
+  validateUserRegistration,
+  validateUserLogin,
+  validateUserPasswordUpdate,
+  validateEmailForForgetPassword,
+  validateUserResetPassword,
+};

@@ -6,6 +6,7 @@ const { findWithId } = require("../services/findWithId");
 const { successResponse, errorResponse } = require("./responseController");
 const { emailWithNodeMailer } = require("../helper/sendEmail");
 const errorHandaler = require("http-errors");
+const bcrypt = require("bcryptjs");
 
 // get all users
 const getAllUsers = async (req, res) => {
@@ -325,6 +326,140 @@ const unbanUserById = async (req, res, next) => {
   }
 };
 
+// update or change password
+const updateUserPassword = async (req, res, next) => {
+  try {
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+
+    const id = req.params.id;
+
+    const user = await findWithId(User, id);
+
+    const mtcOldPassWithNewPass = await bcrypt.compare(
+      oldPassword,
+      user.password
+    );
+
+    if (!mtcOldPassWithNewPass) {
+      throw errorHandaler(
+        400,
+        "old password is not match with this user profile"
+      );
+    }
+
+    if (oldPassword === newPassword) {
+      throw errorHandaler(
+        400,
+        "Can't change your correct password to your new password"
+      );
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw errorHandaler(
+        400,
+        "confirmation password did't match to new password"
+      );
+    }
+
+    const whoUpdatePass = await User.findByIdAndUpdate(
+      id,
+      {
+        password: newPassword,
+      },
+      { new: true }
+    );
+
+    // send response
+    successResponse(res, {
+      statusCode: 200,
+      message: "password updated successfully",
+      payload: { whoUpdatePass },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// forgot password
+const passwordForgot = async (req, res, next) => {
+  try {
+    const clientURL = process.env.CLIENT_URL;
+
+    const { email } = req.body;
+
+    // check email if exists
+    const emailCheck = await User.findOne({ email });
+    if (!emailCheck)
+      throw errorHandaler(404, "user doesn't exists with this email");
+
+    // generate token
+    const token = jwt.sign({ email }, process.env.TOKEN_GEN_FORGOT_PASSWORD, {
+      expiresIn: 1000 * 60 * 3,
+    });
+
+    // send token to verify email
+    const emailData = {
+      email,
+      subject: "Forgot Password",
+      html: `
+      <h2>Hello ${emailCheck.name} !</h2>
+      <p>Please <a href="${clientURL}/user/forget-password/${token}" target="_blank">click here</a> to activate your account </p>`,
+    };
+
+    // emailWithNodeMailer(emailData);
+
+    // send response
+    successResponse(res, {
+      statusCode: 200,
+      message:
+        "A link has been sent to your email address. please verify and reset your password",
+      payload: { token },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// reset user password
+const resetUserPassword = async (req, res, next) => {
+  try {
+
+    const { token, newPassword, confirmPassword } = req.body;
+
+    const decode = jwt.verify(token, process.env.TOKEN_GEN_FORGOT_PASSWORD);
+
+    const user = await User.findOne({ email : decode.email })
+
+    const mtcOldPassWithNewPass = await bcrypt.compare(
+      newPassword,
+      user.password
+    )
+
+    if(mtcOldPassWithNewPass) throw errorHandaler(400, "you have enterd an old password. Please try agian with different key")
+
+    if (newPassword !== confirmPassword) {
+      throw errorHandaler(400, "confirm password didn't match to new password");
+    }
+
+    const id = user._id
+    const resetedPass = await User.findByIdAndUpdate(id, {
+      password : confirmPassword
+    }, { new : true }).select("-password")
+
+    // send response
+    successResponse(res, {
+      statusCode: 200,
+      message: "password reset successfully",
+      payload : {
+        resetedPass
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 
 // module exports
 module.exports = {
@@ -335,5 +470,8 @@ module.exports = {
   activateRegisteredUser,
   updateUserById,
   banUserById,
-  unbanUserById
+  unbanUserById,
+  updateUserPassword,
+  passwordForgot,
+  resetUserPassword,
 };
